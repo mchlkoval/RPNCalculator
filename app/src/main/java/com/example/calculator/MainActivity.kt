@@ -21,17 +21,26 @@ class MainActivity : AppCompatActivity() {
 
     fun btnClicked(view: View) {
         var btnClicked = view as Button;
-        var newText = "${tvInput.text}" + "${btnClicked.text}";
 
 
-        if(btnClicked.text == "=") {
-            var rpnText = RPNBuilder().InfixToRPN(inputs.toTypedArray())
-            var answer = RPNBuilder().EvaluateRPN(rpnText);
-            tvInput.text = answer.toString()
-            println(rpnText)
-        } else {
-            inputs.add(btnClicked.text.toString());
-            tvInput.text = newText;
+
+        when(btnClicked.text) {
+            "=" -> {
+                if(inputs == null || inputs.count() == 0) {
+                    return;
+                }
+
+                var answer = RPNBuilder.EvaluateRPN(inputs.toTypedArray());
+                tvInput.text = answer.toString()
+            }
+            "CE" -> {
+                tvInput.text = "";
+            }
+            else -> {
+                var newText = "${tvInput.text}" + "${btnClicked.text}";
+                inputs.add(btnClicked.text.toString());
+                tvInput.text = newText;
+            }
         }
     }
 

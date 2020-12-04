@@ -5,100 +5,106 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class RPNBuilder {
-    private val LEFT_ASSOC : Int = 0;
-    private  val RIGHT_ASSOC = 0;
+    companion object {
+        private val LEFT_ASSOC : Int = 0;
+        private  val RIGHT_ASSOC = 0;
 
-    private val OPERATORS = hashMapOf(
-            "-" to intArrayOf(0, LEFT_ASSOC),
-            "+" to intArrayOf(0, LEFT_ASSOC),
-            "*" to intArrayOf(5, LEFT_ASSOC),
-            "/" to intArrayOf(5, LEFT_ASSOC)
-    )
+        private val OPERATORS = hashMapOf(
+                "-" to intArrayOf(0, LEFT_ASSOC),
+                "+" to intArrayOf(0, LEFT_ASSOC),
+                "*" to intArrayOf(5, LEFT_ASSOC),
+                "/" to intArrayOf(5, LEFT_ASSOC)
+        )
 
-    private fun isOperator(token: String) : Boolean {
-        return OPERATORS.containsKey(token);
-    }
-
-    private fun isAssociative(token: String, type: Int) : Boolean {
-        if(!isOperator(token)) {
-            throw IllegalArgumentException("Invalid Token: $token")
-        }
-        if(OPERATORS[token]?.get(1)  == type) {
-            return true
+        private fun isOperator(token: String) : Boolean {
+            return OPERATORS.containsKey(token);
         }
 
-        return false
-    }
+        private fun isAssociative(token: String, type: Int) : Boolean {
+            if(!isOperator(token)) {
+                throw IllegalArgumentException("Invalid Token: $token")
+            }
+            if(OPERATORS[token]?.get(1)  == type) {
+                return true
+            }
 
-    private fun computePrecedence(token1 : String, token2: String) : Int {
-        if (!isOperator(token1) || !isOperator(token2)) {
-            throw IllegalArgumentException("Invalied tokens: " + token1
-                    + " " + token2);
+            return false
         }
 
-        var firstValue = OPERATORS[token1]!![0]
-        var secondValue = OPERATORS[token2]!![0]
-        return firstValue - secondValue;
-    }
+        private fun computePrecedence(token1 : String, token2: String) : Int {
+            if (!isOperator(token1) || !isOperator(token2)) {
+                throw IllegalArgumentException("Invalid tokens: " + token1
+                        + " " + token2);
+            }
 
-    public fun InfixToRPN(inputTokens : Array<String>) : Array<String>{
-        var out = ArrayList<String>()
-        var stack = Stack<String>();
+            var firstValue = OPERATORS[token1]!![0]
+            var secondValue = OPERATORS[token2]!![0]
+            return firstValue - secondValue;
+        }
 
-        inputTokens.forEach { token ->
-            if(isOperator(token)) {
-                while(!stack.empty() && isOperator(stack.peek())) {
-                    if((isAssociative(token, LEFT_ASSOC) && computePrecedence(token, stack.peek()) <= 0) ||
-                            ((isAssociative(token, RIGHT_ASSOC) && computePrecedence(
-                                    token, stack.peek()) < 0))) {
-                        out.add((stack.pop()))
-                        continue;
+        private fun infixToRPN(inputTokens : Array<String>) : Array<String>{
+            var out = ArrayList<String>()
+            var stack = Stack<String>();
+
+            inputTokens.forEach { token ->
+                if(isOperator(token)) {
+                    while(!stack.empty() && isOperator(stack.peek())) {
+                        if((isAssociative(token, LEFT_ASSOC) && computePrecedence(token, stack.peek()) <= 0) ||
+                                ((isAssociative(token, RIGHT_ASSOC) && computePrecedence(
+                                        token, stack.peek()) < 0))) {
+                            out.add((stack.pop()))
+                            continue;
+                        }
+                        break;
                     }
-                    break;
-                }
-                stack.push(token)
-            } else {
-                out.add(token)
-            }
-        }
-
-        while(!stack.empty()) {
-            out.add(stack.pop())
-        }
-
-        return out.toTypedArray();
-    }
-
-    fun EvaluateRPN(rpnExpression : Array<String>) : Int {
-
-        var stack = Stack<Int>()
-        rpnExpression.forEach { token ->
-            when (token) {
-                "+" -> {
-                    stack.push(stack.pop() + stack.pop())
-                    println(stack)
-                }
-                "-" -> {
-                    stack.push(stack.pop() - stack.pop())
-                    println(stack)
-                }
-                "*" -> {
-                    stack.push(stack.pop() * stack.pop())
-                    println(stack)
-                }
-                "/" -> {
-                    var firstPop = stack.pop()
-                    var secondPop = stack.pop()
-                    stack.push(secondPop / firstPop)
-                    println(stack)
-                }
-                else -> {
-                    stack.push(token.toInt())
-                    println(stack)
+                    stack.push(token)
+                } else {
+                    out.add(token)
                 }
             }
+
+            while(!stack.empty()) {
+                out.add(stack.pop())
+            }
+
+            return out.toTypedArray();
         }
 
-        return stack.pop();
+        fun EvaluateRPN(infixExpression : Array<String>) : Int {
+
+            var rpnExpression = infixToRPN(infixExpression);
+            var stack = Stack<Int>()
+            rpnExpression.forEach { token ->
+                when (token) {
+                    "+" -> {
+                        stack.push(stack.pop() + stack.pop())
+                        println(stack)
+                    }
+                    "-" -> {
+                        var firstPop = stack.pop()
+                        var secondPop = stack.pop()
+                        stack.push(secondPop - firstPop)
+                        println(stack)
+                    }
+                    "*" -> {
+                        stack.push(stack.pop() * stack.pop())
+                        println(stack)
+                    }
+                    "/" -> {
+                        var firstPop = stack.pop()
+                        var secondPop = stack.pop()
+                        stack.push(secondPop / firstPop)
+                        println(stack)
+                    }
+                    else -> {
+                        stack.push(token.toInt())
+                        println(stack)
+                    }
+                }
+            }
+
+            return stack.pop();
+        }
     }
+
 }
